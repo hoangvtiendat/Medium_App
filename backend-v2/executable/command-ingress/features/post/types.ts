@@ -24,6 +24,8 @@ interface PostService {
   createPost(postCreationDto: PostCreationDto): Promise<PostEntity>;
   fetchPostsByUser(id: string): Promise<PostEntity[]>;
   getPost(id: string): Promise<PostEntity>
+  updatePost(id: string, body: PostCreationDto): Promise<PostEntity>
+  deletePost(id: string): Promise<PostEntity>
 }
 
 export {

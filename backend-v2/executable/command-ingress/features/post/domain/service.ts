@@ -3,6 +3,42 @@ import User from '../../../../../internal/model/user';
 import { PostEntity, PostCreationDto, PostService } from '../types';
 
 export class PostServiceImpl implements PostService {
+
+
+  async deletePost(id: string): Promise<PostEntity> {
+    await Post.findByIdAndDelete(id);
+    return;
+  }
+  async updatePost(id: string, body: PostCreationDto): Promise<PostEntity> {
+    const post = await Post.findOne({ _id: id });
+    if (!post) {
+      throw new Error('Post not found');
+    }
+
+    await Post.updateOne({ _id: id }, {
+      $set: {
+        author: body.authorID,
+        title: body.title,
+        markdown: body.markdown,
+        image: body.image,
+        tags: body.tags,
+      }
+    });
+
+    return {
+      id: String(post._id),
+      image: String(post.image),
+      authorID: String(post.author),
+      markdown: post.markdown,
+      title: post.title,
+      tags: post.tags,
+      summary: post.summary,
+      createdAt: Number(post.createdAt),
+    }
+
+
+
+  }
   async getPost(id: string): Promise<PostEntity> {
     const post = await Post.findOne({ _id: id });
 

@@ -10,7 +10,7 @@ export const deleteUser = asyncHandler(async (req, res, next) => {
 });
 
 export const followUser = asyncHandler(async (req, res, next) => {
-
+  
 });
 
 export const unfollowUser = asyncHandler(async (req, res, next) => {
@@ -18,7 +18,7 @@ export const unfollowUser = asyncHandler(async (req, res, next) => {
 });
 
 export const suggestUsers = asyncHandler(async (req, res, next) => {
-
+  
 });
 
 export const getUser = asyncHandler(async (req, res, _next) => {

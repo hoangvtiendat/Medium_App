@@ -13,7 +13,7 @@ const requireAuthorizedUser = (req: HttpRequest, res: Response, next: NextFuncti
       return;
     }
 
-    const payload = jwt.verify(jwtToken, env.JWT_SECRET);
+    const payload = jwt.verify(jwtToken, env.JWT_SECRET) as jwt.JwtPayload;
 
     if (!payload.sub) {
       res.sendStatus(401);
@@ -21,6 +21,7 @@ const requireAuthorizedUser = (req: HttpRequest, res: Response, next: NextFuncti
     }
 
     req.getSubject = () => String(payload.sub);
+    // (req as HttpRequest).getSubject = () => String(payload.sub);
     next();
   } catch (error) {
     next(error);
