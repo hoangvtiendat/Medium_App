@@ -3,13 +3,20 @@ import { HttpRequest } from '../../../types';
 import { UserEntity, UserService } from '../types';
 import { Response, NextFunction } from 'express';
 import { followUser } from '../service';
+import { RedisClientType } from 'redis';
 
 export class UserController extends BaseController {
+  // service: PostService;
+  redisClient: RedisClientType;
+
+ 
+
   service: UserService;
 
-  constructor(service: UserService) {
+  constructor(service: UserService, redisClient: RedisClientType) {
     super();
     this.service = service;
+    this.redisClient = redisClient;
   }
 
   async getOne(req: HttpRequest, res: Response, next: NextFunction): Promise<void> {
@@ -69,7 +76,22 @@ export class UserController extends BaseController {
         message: "Get Follower Completed",
         Information: follower
       })
+    })
+  }
 
+  async getAllPostOfFollowing(req: HttpRequest, res: Response, next: NextFunction): Promise<void> {
+    await this.execWithTryCatchBlock(req, res, next, async (req, res, _next) => {
+      console.log("check1")
+      const sub = req.getSubject();
+      console.log("sub: ", sub);
+      console.log("check2")
+
+      const post = await this.service.getAllPostOfFollowing(sub, this.redisClient);
+
+      res.status(200).json({
+        message: "Get All Post of following Completed",
+        Information: post
+      })
     })
   }
 }

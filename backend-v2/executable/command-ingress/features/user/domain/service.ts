@@ -1,25 +1,39 @@
 import { UserEntity, UserService } from '../types';
 import UserModel from '../../../../../internal/model/user';
 import { followUser } from '../service';
+import PostModel from '../../../../../internal/model/post';
 import { error } from 'console';
 import { promises } from 'dns';
 import { forEach } from 'lodash';
 import { BaseController } from '../../../shared/base-controller';
+import mongoose from 'mongoose';
+import { PostEntity } from '../../post/types';
+import { createClient } from 'redis';
+import { connectRedis } from '../../../../../lib/redis'
+import { RedisSink } from '../../../../mongodb-redis-connector/sink/redis_feeds';
+import { RedisClientType } from 'redis';
+
 
 
 export class UserServiceImpl extends BaseController implements UserService {
   async getOne(id: string): Promise<UserEntity> {
     const user = await UserModel.findById(id);
 
+
     return {
       id: String(user._id),
       name: String(user.name),
       avatar: String(user.avatar),
       email: String(user.email),
+
     };
   }
 
   async followUser(sub: string, id: string): Promise<void> {
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     const user = await UserModel.findById(sub);
     const followUser = await UserModel.findById(id);
     console.log("iddd: ", followUser)
@@ -27,10 +41,9 @@ export class UserServiceImpl extends BaseController implements UserService {
     if (!followUser) {
       throw new Error("User not found");
     }
-    if(followUser.id === user.id)
-    {
+    if (followUser.id === user.id) {
       throw new Error("Cannot follow");
-      
+
     }
 
     if (user.followings.includes(followUser.id)) {
@@ -39,11 +52,16 @@ export class UserServiceImpl extends BaseController implements UserService {
     user.followings.push(followUser.id);
     followUser.followers.push(user.id);
 
-    await user.save();
-    await followUser.save();
+    await user.save({ session });
+    await followUser.save({ session });
+    await session.commitTransaction();
   }
 
   async unfollowUser(sub: string, id: string): Promise<void> {
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     const user = await UserModel.findById(sub);
     const unfollowUser = await UserModel.findById(id);
 
@@ -62,8 +80,10 @@ export class UserServiceImpl extends BaseController implements UserService {
     }
     unfollowUser.followers.splice(indexUnfollowUser, 1);
 
-    await user.save();
-    await unfollowUser.save();
+    await user.save({ session });
+    await unfollowUser.save({ session });
+    await session.commitTransaction();
+
   }
 
   async getFollowing(sub: string, id: string): Promise<UserEntity> {
@@ -115,4 +135,37 @@ export class UserServiceImpl extends BaseController implements UserService {
       throw error;
     }
   }
+
+  private redisClient: RedisClientType;
+
+  constructor() {
+    super();
+    this.redisClient = createClient();
+    this.redisClient.connect();
+  }
+
+  async getAllPostOfFollowing(sub: string, redisClient: RedisClientType): Promise<PostEntity[]> {
+    try {
+      console.log(11111);
+      const user = await UserModel.findById(sub).populate('followings');
+      if (!user) {
+        throw new Error("User not found.");
+      }
+
+      console.log(222222);
+      const posts = [];
+      for (const following of user.followings) {
+        const userPosts = await PostModel.find({ author: following._id });
+        posts.push(...userPosts);
+      }
+      console.log(333333);
+      return posts;
+    } catch (error) {
+      throw error;
+    }
+
+  }
+
+
+
 }

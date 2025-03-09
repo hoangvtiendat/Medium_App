@@ -7,9 +7,10 @@
     "build": "npx tsc",
     "test": "jest",
     "dev:api-example": "nodemon samples/main.ts",
-    "dev:command-ingress": "nodemon executable/command-ingress/main.ts",
+    "dev": "nodemon executable/command-ingress/main.ts",
     "lint": "npx eslint .",
-    "lint:fix": "npx eslint --fix ."
+    "lint:fix": "npx eslint --fix .",
+    "cdc-test" : "nodemon executable/cdc-test/main.ts"
   },
   "keywords": [],
   "author": "",

@@ -1,7 +1,7 @@
 import express from 'express';
 import { AuthController } from './controller';
 
-const initAuthRoute: (controller: AuthController) => express.Router  = (controller) => {
+const   initAuthRoute: (controller: AuthController) => express.Router  = (controller) => {
   const router = express.Router();
 
   router.route('/google/oauth').get(controller.exchangeGoogleToken.bind(controller));

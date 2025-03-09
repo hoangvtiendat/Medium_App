@@ -13,10 +13,13 @@ import { AuthServiceImpl } from './features/auth/domain/service';
 import { GoogleIdentityBroker } from './features/auth/identity-broker/google-idp.broker';
 import { PostServiceImpl } from './features/post/domain/service';
 import { PostController } from './features/post/adapter/controller';
+   
+
 
 import initAuthRoute from './features/auth/adapter/route';
 import initPostRoute from './features/post/adapter/route';
 import initUserRoute from './features/user/adapter/route';
+
 import { UserController } from './features/user/adapter/controller';
 import { UserServiceImpl } from './features/user/domain/service';
 
@@ -50,10 +53,12 @@ const createHttpServer = (redisClient: any) => {
   const userService = new UserServiceImpl();
 
 
+
   // Setup route
   app.use('/auth', initAuthRoute(new AuthController(authService)));
   app.use('/post', initPostRoute(new PostController(postService)));
-  app.use('/users', initUserRoute(new UserController(userService)));
+  app.use('/users', initUserRoute(new UserController(userService, redisClient)));
+
 
   app.use(recoverMiddleware);
 
